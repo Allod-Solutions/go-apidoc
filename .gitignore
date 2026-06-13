@@ -1,4 +1,5 @@
-apidoc
+# built binary
+/apidoc
 /dist/
-*.html
-!README.md
+# generated output — not checked in
+/example-output/

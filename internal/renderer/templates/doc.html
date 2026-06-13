@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{.Title}}{{if .Version}} {{.Version}}{{end}} — API Reference</title>
+<meta name="description" content="{{firstLine .Description}}">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0f1117;
+  --bg2:      #181c27;
+  --bg3:      #1e2333;
+  --border:   #2a2f42;
+  --text:     #cdd3e0;
+  --muted:    #7a8299;
+  --accent:   #af9061;
+  --get:      #4caf82;
+  --post:     #5b8def;
+  --put:      #e09b3d;
+  --patch:    #9b7bd4;
+  --delete:   #e06060;
+  --head:     #7ab8d4;
+  --options:  #a0a0a0;
+  --code-bg:  #111420;
+  --radius:   6px;
+  --font:     system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:     "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:       #ffffff;
+    --bg2:      #f6f7f9;
+    --bg3:      #eef0f4;
+    --border:   #d4d8e2;
+    --text:     #1a1d27;
+    --muted:    #6b7286;
+    --accent:   #8a6e40;
+    --code-bg:  #f0f1f5;
+  }
+}
+
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.6; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Layout ── */
+.layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 0 0 2rem;
+}
+.sidebar-header {
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-title { font-size: 0.95rem; font-weight: 700; color: var(--text); word-break: break-word; }
+.sidebar-version { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; font-family: var(--mono); }
+nav ul { list-style: none; padding: 0.5rem 0; }
+nav li a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1.25rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  transition: color 0.15s, background 0.15s;
+  border-left: 2px solid transparent;
+}
+nav li a:hover { color: var(--text); text-decoration: none; background: var(--bg3); }
+nav .nav-tag { padding: 1rem 1.25rem 0.25rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+nav .nav-method { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; padding: 0.1em 0.4em; border-radius: 3px; flex-shrink: 0; min-width: 3.5em; text-align: center; }
+
+/* ── Content ── */
+.content { padding: 2.5rem 3rem; max-width: 900px; }
+
+/* ── Info section ── */
+.info-section { margin-bottom: 3rem; }
+.info-section h1 { font-size: 1.9rem; font-weight: 800; color: var(--text); margin-bottom: 0.4rem; }
+.info-meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.badge { font-size: 0.75rem; font-family: var(--mono); background: var(--bg3); color: var(--muted); padding: 0.2em 0.65em; border-radius: var(--radius); border: 1px solid var(--border); }
+.servers { margin-bottom: 1rem; }
+.servers h2 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.4rem; }
+.servers ul { list-style: none; }
+.servers li { font-family: var(--mono); font-size: 0.82rem; color: var(--text); padding: 0.15rem 0; }
+.description { color: var(--text); line-height: 1.75; }
+.description p + p { margin-top: 0.75rem; }
+
+/* ── Tag groups ── */
+.tag-group { margin-bottom: 3rem; }
+.tag-group h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+.tag-description { font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem; margin-top: -0.75rem; }
+
+/* ── Endpoint ── */
+.endpoint {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  user-select: none;
+}
+.endpoint-header:hover { background: var(--bg3); }
+.method {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.25em 0.6em;
+  border-radius: 4px;
+  min-width: 4.2em;
+  text-align: center;
+  flex-shrink: 0;
+}
+.method-get     { background: color-mix(in srgb, var(--get)    20%, transparent); color: var(--get);    border: 1px solid color-mix(in srgb, var(--get)    40%, transparent); }
+.method-post    { background: color-mix(in srgb, var(--post)   20%, transparent); color: var(--post);   border: 1px solid color-mix(in srgb, var(--post)   40%, transparent); }
+.method-put     { background: color-mix(in srgb, var(--put)    20%, transparent); color: var(--put);    border: 1px solid color-mix(in srgb, var(--put)    40%, transparent); }
+.method-patch   { background: color-mix(in srgb, var(--patch)  20%, transparent); color: var(--patch);  border: 1px solid color-mix(in srgb, var(--patch)  40%, transparent); }
+.method-delete  { background: color-mix(in srgb, var(--delete) 20%, transparent); color: var(--delete); border: 1px solid color-mix(in srgb, var(--delete) 40%, transparent); }
+.method-head,
+.method-options { background: color-mix(in srgb, var(--head)   20%, transparent); color: var(--head);   border: 1px solid color-mix(in srgb, var(--head)   40%, transparent); }
+.endpoint-path { font-family: var(--mono); font-size: 0.88rem; color: var(--text); }
+.endpoint-summary { font-size: 0.85rem; color: var(--muted); margin-left: auto; }
+.deprecated-badge { font-size: 0.7rem; background: color-mix(in srgb, var(--delete) 15%, transparent); color: var(--delete); border: 1px solid color-mix(in srgb, var(--delete) 30%, transparent); padding: 0.15em 0.5em; border-radius: 3px; }
+.chevron { margin-left: auto; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+.endpoint-body {
+  border-top: 1px solid var(--border);
+  padding: 1.25rem 1.1rem;
+  display: none;
+}
+.endpoint.open .endpoint-body { display: block; }
+.endpoint.open .chevron { transform: rotate(180deg); }
+.endpoint-description { color: var(--muted); font-size: 0.88rem; margin-bottom: 1rem; line-height: 1.7; }
+
+/* ── Sections inside endpoint ── */
+.section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 1.25rem 0 0.6rem;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* ── Parameters table ── */
+.params-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.params-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 0.72rem; padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+.params-table td { padding: 0.5rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+.params-table tr:last-child td { border-bottom: none; }
+.param-name { font-family: var(--mono); color: var(--text); }
+.param-in { font-size: 0.72rem; color: var(--muted); background: var(--bg3); padding: 0.1em 0.4em; border-radius: 3px; }
+.param-required { color: var(--delete); font-size: 0.75rem; }
+.param-type { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); }
+.param-desc { color: var(--muted); font-size: 0.82rem; }
+
+/* ── Schema ── */
+.schema { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 0.82rem; }
+.schema-type { font-family: var(--mono); color: var(--accent); }
+.schema-ref { font-family: var(--mono); color: var(--accent); font-style: italic; }
+.schema-props { margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--border); }
+.schema-prop { margin: 0.3rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: baseline; }
+.prop-name { font-family: var(--mono); color: var(--text); }
+.prop-required { color: var(--delete); font-size: 0.72rem; }
+.prop-type { font-family: var(--mono); color: var(--accent); font-size: 0.8rem; }
+.prop-desc { color: var(--muted); font-size: 0.8rem; }
+.prop-enum { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+
+/* ── Response codes ── */
+.response { margin-bottom: 0.75rem; }
+.response-code {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2em 0.55em;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+}
+.code-2xx { background: color-mix(in srgb, var(--get)    15%, transparent); color: var(--get);    border: 1px solid color-mix(in srgb, var(--get)    30%, transparent); }
+.code-3xx { background: color-mix(in srgb, var(--head)   15%, transparent); color: var(--head);   border: 1px solid color-mix(in srgb, var(--head)   30%, transparent); }
+.code-4xx { background: color-mix(in srgb, var(--put)    15%, transparent); color: var(--put);    border: 1px solid color-mix(in srgb, var(--put)    30%, transparent); }
+.code-5xx { background: color-mix(in srgb, var(--delete) 15%, transparent); color: var(--delete); border: 1px solid color-mix(in srgb, var(--delete) 30%, transparent); }
+.code-def { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+.response-desc { font-size: 0.85rem; color: var(--muted); display: inline; margin-left: 0.5rem; }
+
+/* ── Media type label ── */
+.media-type { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin: 0.4rem 0 0.25rem; }
+
+/* ── Footer ── */
+footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+footer a { color: var(--muted); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .content { padding: 1.5rem 1rem; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">{{.Title}}</div>
+    {{if .Version}}<div class="sidebar-version">{{.Version}}</div>{{end}}
+  </div>
+  <nav aria-label="API navigation">
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      {{range .Tags}}
+      <li class="nav-tag">{{.Name}}</li>
+      {{range .Endpoints}}
+      <li><a href="#{{anchorID .Method .Path}}">
+        <span class="nav-method" style="color:{{methodColor .Method}};background:{{methodBg .Method}};">{{.Method}}</span>
+        <span>{{.Path}}</span>
+      </a></li>
+      {{end}}
+      {{end}}
+    </ul>
+  </nav>
+</aside>
+
+<!-- ══════════ CONTENT ══════════ -->
+<main class="content">
+
+  <!-- Info -->
+  <section class="info-section" id="overview">
+    <h1>{{.Title}}</h1>
+    <div class="info-meta">
+      {{if .Version}}<span class="badge">v{{.Version}}</span>{{end}}
+      {{range .Servers}}<span class="badge">{{.}}</span>{{end}}
+    </div>
+    {{if .Servers}}
+    <div class="servers">
+      <h2>Servers</h2>
+      <ul>{{range .Servers}}<li>{{.}}</li>{{end}}</ul>
+    </div>
+    {{end}}
+    {{if .Description}}<div class="description"><p>{{.Description}}</p></div>{{end}}
+  </section>
+
+  <!-- Endpoints by tag -->
+  {{range .Tags}}
+  <section class="tag-group" id="tag-{{slugify .Name}}">
+    <h2>{{.Name}}</h2>
+    {{if .Description}}<p class="tag-description">{{.Description}}</p>{{end}}
+
+    {{range .Endpoints}}
+    <article class="endpoint{{if .Deprecated}} deprecated{{end}}" id="{{anchorID .Method .Path}}">
+      <div class="endpoint-header" role="button" tabindex="0" aria-expanded="false" onclick="toggleEndpoint(this)">
+        <span class="method method-{{lower .Method}}">{{.Method}}</span>
+        <code class="endpoint-path">{{.Path}}</code>
+        {{if .Deprecated}}<span class="deprecated-badge">deprecated</span>{{end}}
+        {{if .Summary}}<span class="endpoint-summary">{{.Summary}}</span>{{end}}
+        <svg class="chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="endpoint-body">
+        {{if .Description}}<p class="endpoint-description">{{.Description}}</p>{{end}}
+
+        {{if .Parameters}}
+        <div class="section-label">Parameters</div>
+        <table class="params-table">
+          <thead><tr><th>Name</th><th>In</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+          {{range .Parameters}}
+          <tr>
+            <td>
+              <span class="param-name">{{.Name}}</span>
+              {{if .Required}} <span class="param-required">*</span>{{end}}
+            </td>
+            <td><span class="param-in">{{.In}}</span></td>
+            <td>{{if .Schema}}<span class="param-type">{{schemaType .Schema}}</span>{{end}}</td>
+            <td><span class="param-desc">{{.Description}}</span></td>
+          </tr>
+          {{end}}
+          </tbody>
+        </table>
+        {{end}}
+
+        {{if .RequestBody}}
+        <div class="section-label">Request Body{{if .RequestBody.Required}} <span class="param-required">*</span>{{end}}</div>
+        {{if .RequestBody.Description}}<p class="param-desc" style="margin-bottom:.5rem">{{.RequestBody.Description}}</p>{{end}}
+        {{range .RequestBody.Content}}
+        <div class="media-type">{{.Type}}</div>
+        {{if .Schema}}{{renderSchema .Schema}}{{end}}
+        {{end}}
+        {{end}}
+
+        {{if .Responses}}
+        <div class="section-label">Responses</div>
+        {{range .Responses}}
+        <div class="response">
+          <span class="response-code {{responseCodeClass .Code}}">{{.Code}}</span>
+          {{if .Description}}<span class="response-desc">{{.Description}}</span>{{end}}
+          {{range .Content}}
+          <div class="media-type">{{.Type}}</div>
+          {{if .Schema}}{{renderSchema .Schema}}{{end}}
+          {{end}}
+        </div>
+        {{end}}
+        {{end}}
+      </div>
+    </article>
+    {{end}}
+  </section>
+  {{end}}
+
+</main>
+</div>
+
+<footer>
+  Generated by <a href="https://github.com/Allod-Solutions/go-apidoc">go-apidoc</a>
+</footer>
+
+<script>
+function toggleEndpoint(header) {
+  var ep = header.closest('.endpoint');
+  var open = ep.classList.toggle('open');
+  header.setAttribute('aria-expanded', open);
+}
+document.addEventListener('keydown', function(e) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.getAttribute('role') === 'button') {
+    e.preventDefault();
+    toggleEndpoint(e.target);
+  }
+});
+// Open the endpoint targeted by the URL hash on load.
+if (location.hash) {
+  var el = document.getElementById(location.hash.slice(1));
+  if (el && el.classList.contains('endpoint')) {
+    var hdr = el.querySelector('.endpoint-header');
+    if (hdr) toggleEndpoint(hdr);
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+</script>
+</body>
+</html>
