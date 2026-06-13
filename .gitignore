@@ -1,0 +1,4 @@
+apidoc
+/dist/
+*.html
+!README.md
