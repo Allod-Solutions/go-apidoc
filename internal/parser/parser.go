@@ -158,6 +158,23 @@ func convert(spec *openapi3.T) *Doc {
 		}
 	}
 
+	// If the spec defines a top-level tags array, use that order.
+	// Tags not listed there keep their insertion order at the end.
+	if len(spec.Tags) > 0 {
+		specOrder := make(map[string]int, len(spec.Tags))
+		for i, t := range spec.Tags {
+			specOrder[t.Name] = i
+		}
+		sort.SliceStable(order, func(i, j int) bool {
+			oi, oki := specOrder[order[i]]
+			oj, okj := specOrder[order[j]]
+			if oki && okj {
+				return oi < oj
+			}
+			return oki
+		})
+	}
+
 	for _, name := range order {
 		doc.Tags = append(doc.Tags, *groups[name])
 	}
